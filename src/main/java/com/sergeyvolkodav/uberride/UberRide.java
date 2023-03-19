@@ -13,6 +13,9 @@ public class UberRide {
     private Semaphore demsWaiting = new Semaphore(0);
     private Semaphore repubsWaiting = new Semaphore(0);
 
+    /**
+     * barrier is used to wait till a total of 4 threads arrive
+     */
     CyclicBarrier barrier = new CyclicBarrier(4);
     ReentrantLock lock = new ReentrantLock();
 
@@ -22,20 +25,41 @@ public class UberRide {
 
         democrats++;
         if (democrats == 4) {
+            System.out.println("Called release 3");
+            /**
+             * These are the threads which are previously acquired
+             * and are now waiting for the current thread to call release
+             */
             demsWaiting.release(3);
             democrats -= 4;
             riderLeader = true;
         } else if (democrats == 2 && republicans >= 2) {
+            System.out.println("Called release 1");
             demsWaiting.release(1);
+
             repubsWaiting.release(2);
+
             riderLeader = true;
             democrats -= 2;
             republicans -= 2;
         } else {
             lock.unlock();
+
+            /** Current thread will go to sleep
+             * since initial permits are 0,
+             * and it will be waked up
+             * when other thread will call the release method
+             * Check debug statements above
+             */
             demsWaiting.acquire();
+            System.out.println("After acquire");
         }
         seated();
+
+        /** Note this is to make the threads wait
+         *  till a total of 4 threads arrive here
+         *  as defined in the barrier
+         * **/
         barrier.await();
 
         if (riderLeader == true) {
@@ -80,3 +104,4 @@ public class UberRide {
         System.out.println("Uber Ride on Its way... with ride leader " + Thread.currentThread().getName());
     }
 }
+

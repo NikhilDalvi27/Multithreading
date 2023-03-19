@@ -18,7 +18,9 @@ public class ReadWriteLock {
             wait();
         }
         readers--;
-        notify();
+        notify(); /** Required for the while condition (readers!=0) in acquireWriteLock() method
+                      else some thread will forever be stuck in that while loop
+                     even if readers==0 **/
     }
 
     public synchronized void acquireWriteLock() throws InterruptedException {
@@ -30,6 +32,8 @@ public class ReadWriteLock {
 
     public synchronized void releaseWriteLock() {
         isWriteLocked = false;
-        notify();
+        notify();/** Required for the while condition (isWriteLocked) in acquireReadLock() method
+                     else some thread will forever be stuck in that while loop
+                     even if isWriteLocked==false **/
     }
 }

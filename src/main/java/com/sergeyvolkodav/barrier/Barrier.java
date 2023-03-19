@@ -12,6 +12,10 @@ public class Barrier {
 
     public synchronized void await() throws InterruptedException {
 
+        /** if max totalThreads = 3
+         *  then below while loop is to prevent count to be equal to 4
+         *  it ensures the count will be made 0
+         * **/
         while (count == totalThreads) {
             wait();
         }

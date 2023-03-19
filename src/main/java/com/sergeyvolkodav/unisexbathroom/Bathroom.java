@@ -6,7 +6,7 @@ public class Bathroom {
 
     private Gender isGender = Gender.NONE;
     private int emps = 0;
-    Semaphore maxEmps = new Semaphore(3);
+    Semaphore maxEmps = new Semaphore(3); /** to restrict only to 3 employees **/
 
     public void maleUseBathroom(String name) throws InterruptedException {
 
@@ -20,14 +20,16 @@ public class Bathroom {
         }
 
         useBathroom(Gender.MEN);
-        maxEmps.release();
+
+        /** Doesn't matter right? if we do this inside or outside the critical section **/
+        maxEmps.release(); // shouldn't it be inside critical section?
 
         synchronized (this) {
             emps--;
             if (emps == 0) {
                 isGender = Gender.NONE;
             }
-            notifyAll();
+            notifyAll(); /** Note this is IMP in case the Gender becomes none **/
         }
     }
 

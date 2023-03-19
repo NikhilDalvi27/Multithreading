@@ -4,11 +4,11 @@ public class Demo {
 
     public static void main(String[] args) throws InterruptedException {
 
-        BlockingQueue<Integer> blockingQueue = new BlockingQueue<>(5);
+        CustomQueue blockingQueue = new CustomQueue(5);
 
         Thread thread1 = new Thread(() -> {
 
-            for (int i = 0; i <= 50; i++) {
+            for (int i = 0; i < 50; i++) {
                 try {
                     blockingQueue.enqueue(i);
                     System.out.println("Thread 1 enqueued " + i);
@@ -20,7 +20,7 @@ public class Demo {
 
 
         Thread thread2 = new Thread(() -> {
-            for (int i = 0; i <= 25; i++) {
+            for (int i = 0; i < 25; i++) {
                 try {
                     System.out.println("Thread 2 dequeued: " + blockingQueue.dequeue());
                 } catch (InterruptedException e) {
@@ -29,7 +29,7 @@ public class Demo {
             }
         });
         Thread thread3 = new Thread(() -> {
-            for (int i = 0; i <= 25; i++) {
+            for (int i = 0; i < 25; i++) {
                 try {
                     System.out.println("Thread 3 dequeued: " + blockingQueue.dequeue());
 
