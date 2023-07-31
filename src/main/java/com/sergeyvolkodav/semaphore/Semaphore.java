@@ -14,7 +14,13 @@ public class Semaphore {
         while (permits == maxCount) {
             wait();
         }
+
+        //todo this can be called after notify also, bcoz it would be the same thing
+        // till the current thread has acquired the lock
         permits++;
+
+        //todo this is for any waiting thread in the release method is able to move forward,
+        // since permits are now being increased
         notify();
     }
 
@@ -22,7 +28,13 @@ public class Semaphore {
         while (permits == 0) {
             wait();
         }
+
+        //todo this can be called after notify also, bcoz it would be the same thing
+        // till the current thread has acquired the lock
         permits--;
+
+        //todo this is for any waiting thread in the release method is able to move forward,
+        // since permits are now being decreased
         notify();
     }
 }

@@ -1,5 +1,5 @@
 package com.sergeyvolkodav.unisexbathroom;
 
 public enum Gender {
-    MEN, FEMALE, NONE
+    MALE, FEMALE, NONE
 }

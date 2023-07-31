@@ -6,7 +6,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
-public class DeferredCallback {
+public class NewDeferredCallback {
 
     private PriorityQueue<CallBack> priorityQueue = new PriorityQueue<>(new Comparator<CallBack>() {
         @Override
@@ -38,20 +38,26 @@ public class DeferredCallback {
                 condition.await(); /** unlock the lock which is acquired above, and put the current thread which acquired the lock to sleep **/
             }
 
-            /**
-             * Run this loop till the earliest callback is not due
-             */
-            while (findSleepDuration()>0) { //todo note, this while loop is to guard for spurious wake ups.
+            while (priorityQueue.size() != 0) {
+
+                sleepFor = findSleepDuration();
+
                 /**
-                 * Wait till the time when earliest callback
+                 * If the earliest callback in the queue is scheduled now for execution
+                 * then, break the current loop and execute the earliest callback
+                 */
+                if(sleepFor<=0){
+                    break;
+                }
+
+                /**
+                 * else again wait till the time when earliest callback
                  * will be due for execution
                  */
-                condition.await(findSleepDuration(), TimeUnit.MILLISECONDS);
+
+                condition.await(sleepFor, TimeUnit.MILLISECONDS);
             }
 
-            /**
-             * After reaching here, we will have some callback which is due for execution
-             */
 
             /** NOTE here we are executing callback, only when callback is due, sleepFor<=0  **/
             CallBack callBack = priorityQueue.poll();

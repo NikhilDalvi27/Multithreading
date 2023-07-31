@@ -43,12 +43,12 @@ class CustomQueue {
     }
     public void enqueue(Object o) throws InterruptedException {
         //todo note this synchronized is to allow only 1 thread to call enqueue/dequeue method
-        // so that at a time only 1 thread can manipulate the size variable
+        // so that at a time only 1 thread can manipulate the queue
 
         synchronized (lock) { //todo note we are acquiring lock here before calling wait() and notify()
 
             //todo note here for checking predicate
-            // if is changed to while
+            // if is changed to while loop
             while (currentSize == size) {
                 lock.wait();
             }
@@ -77,7 +77,7 @@ class CustomQueue {
        synchronized (lock) { //todo note we are acquiring lock here before calling wait() and notify()
 
            //todo note here for checking predicate
-           // if is changed to while
+           // if is changed to while loop
            while (currentSize == 0) {
               lock.wait();
            }

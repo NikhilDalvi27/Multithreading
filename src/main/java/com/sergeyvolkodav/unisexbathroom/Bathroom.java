@@ -4,30 +4,41 @@ import java.util.concurrent.Semaphore;
 
 public class Bathroom {
 
-    private Gender isGender = Gender.NONE;
-    private int emps = 0;
-    Semaphore maxEmps = new Semaphore(3); /** to restrict only to 3 employees **/
+    private Gender useBy = Gender.NONE;
+    private int currentEmployees = 0;
+    Semaphore employeeSemaphore = new Semaphore(3); /** to restrict only to 3 employees **/
 
     public void maleUseBathroom(String name) throws InterruptedException {
 
+        //todo note, this synchronized block is to guard
+        // useBy and emps variable which can be read and written to, by multiple threads
         synchronized (this) {
-            while (isGender == Gender.FEMALE) {
+            while (useBy.equals(Gender.FEMALE)) {
                 wait();
             }
-            maxEmps.acquire();
-            isGender = Gender.MEN;
-            emps++;
+
+            //todo note this is to restrict access to 3 employees only
+            employeeSemaphore.acquire();
+
+
+            useBy = Gender.MALE;
+            currentEmployees++;
         }
 
-        useBathroom(Gender.MEN);
+        //todo note, the below 2 statements
+        // should be executed in parallel
+        // without the synchronized block
+        useBathroom(Gender.MALE);
 
-        /** Doesn't matter right? if we do this inside or outside the critical section **/
-        maxEmps.release(); // shouldn't it be inside critical section?
+        employeeSemaphore.release();
 
+
+        //todo note, this synchronized block is to guard
+        // useBy and emps variable which can be read and written to, by multiple threads
         synchronized (this) {
-            emps--;
-            if (emps == 0) {
-                isGender = Gender.NONE;
+            currentEmployees--;
+            if (currentEmployees == 0) {
+                useBy = Gender.NONE;
             }
             notifyAll(); /** Note this is IMP in case the Gender becomes none **/
         }
@@ -37,28 +48,29 @@ public class Bathroom {
 
         synchronized (this) {
 
-            while (isGender == Gender.MEN) {
+            while (useBy.equals(Gender.MALE)) {
                 wait();
             }
-            maxEmps.acquire();
-            isGender = Gender.FEMALE;
-            emps++;
+            employeeSemaphore.acquire();
+            useBy = Gender.FEMALE;
+            currentEmployees++;
         }
 
         useBathroom(Gender.FEMALE);
-        maxEmps.release();
+
+        employeeSemaphore.release();
 
         synchronized (this) {
-            emps--;
-            if (emps == 0) {
-                isGender = Gender.NONE;
+            currentEmployees--;
+            if (currentEmployees == 0) {
+                useBy = Gender.NONE;
             }
             notifyAll();
         }
     }
 
     private void useBathroom(Gender gender) throws InterruptedException {
-        System.out.println(gender.name() + " using bathroom. Current employees in bathroom = " + emps);
+        System.out.println(gender.name() + " using bathroom. Current employees in bathroom = " + currentEmployees);
         Thread.sleep(3500);
         System.out.println("Done with bathroom");
     }

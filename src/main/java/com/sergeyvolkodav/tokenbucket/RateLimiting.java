@@ -2,6 +2,11 @@ package com.sergeyvolkodav.tokenbucket;
 
 import java.time.Instant;
 
+
+//todo for imagining, assume a queue of length -> 5
+// and assume current sec we are at last element of the queue
+// all the past added tokens will be added at the index (0,4)
+
 public class RateLimiting {
 
     private int maxTokens;
