@@ -1,4 +1,4 @@
-package CompletableFutureExample;
+package com.sergeyvolkodav.CompletableFutureExample;
 
 import java.util.concurrent.Callable;
 
