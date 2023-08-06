@@ -1,4 +1,4 @@
-package com.sergeyvolkodav.tokenbucket;
+package com.sergeyvolkodav.RateLimiter;
 
 import java.util.HashSet;
 import java.util.Set;

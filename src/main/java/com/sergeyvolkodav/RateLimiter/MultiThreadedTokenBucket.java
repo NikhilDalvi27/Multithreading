@@ -1,11 +1,12 @@
-package com.sergeyvolkodav.tokenbucket;
+package com.sergeyvolkodav.RateLimiter;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
 public class MultiThreadedTokenBucket {
 
-    private int possibleTokens;
+    private int currentTokens;
     private final int MAX_TOKENS;
     private final int ONE_SECOND = 1000;
 
@@ -23,7 +24,7 @@ public class MultiThreadedTokenBucket {
             executeDeamonThread();
         });
         thread.setDaemon(true);
-        thread.start();
+        thread.start(); //todo cannot use thread.join() here, bcoz the daemon thread keeps on running.
     }
 
     private void executeDeamonThread() {
@@ -32,10 +33,10 @@ public class MultiThreadedTokenBucket {
 
             synchronized (this) {
 
-                //todo note here possibleTokens+1 is what we are checking
+                //todo note here currentTokens+1 is what we are checking
                 // bcoz we need to check +1 value before incrementing
-                if (possibleTokens+1 < MAX_TOKENS) {
-                    possibleTokens = possibleTokens+1;
+                if (currentTokens +1 < MAX_TOKENS) {
+                    currentTokens = currentTokens +1;
                 }
 
                 //todo note daemon threads notifies other threads when the tokens are available
@@ -57,14 +58,21 @@ public class MultiThreadedTokenBucket {
 
             //todo note we are waiting till the tokens are not available
 
-            while (possibleTokens == 0) { //todo note this needs to be a while loop and NOT an IF statement
+            //todo note this needs to be a while loop and NOT an IF statement
+            while (currentTokens == 0) {
+
+                //todo note, we are using wait() here instead of sleep bcoz,
+                // we are notifying from the deamon thread that token is available.
+                // NOTE, here the waiting thread, will give up the Lock as soon as it calls wait()
+                // allowing other threads to acquire the lock.
                 this.wait();
             }
-            possibleTokens--;
+            currentTokens--;
+            System.out.println(
+                    "Granting " + Thread.currentThread().getName() + " token at " + System.currentTimeMillis()/ONE_SECOND  +" currentTokens= "+ currentTokens);
         }
 
-        System.out.println(
-                "Granting " + Thread.currentThread().getName() + " token at " + System.currentTimeMillis() / ONE_SECOND+" possible tokens "+possibleTokens);
+
 
     }
 }

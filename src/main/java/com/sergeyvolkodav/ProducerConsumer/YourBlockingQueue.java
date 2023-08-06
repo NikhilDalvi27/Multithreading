@@ -1,6 +1,7 @@
-package com.sergeyvolkodav.queue;
+package com.sergeyvolkodav.ProducerConsumer;
 
-import java.util.Scanner;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * A blocking queue is defined as a queue which blocks the caller of the enqueue method
@@ -16,11 +17,12 @@ public class YourBlockingQueue {
 class CustomQueue {
 
 
-    Object arr[];
-    int size;
-    int currentSize;
-    int head,tail;
+    private Object arr[];
+    private int size;
+    private int currentSize;
+    private int head,tail;
 
+    //todo note, this is declared final, so as not to allow modifications to it.
     final Object lock = new Object();
 
     CustomQueue(int size){
@@ -48,7 +50,8 @@ class CustomQueue {
         synchronized (lock) { //todo note we are acquiring lock here before calling wait() and notify()
 
             //todo note here for checking predicate
-            // if is changed to while loop
+            // if condition is changed to while loop
+            System.out.println("Current Size :"+currentSize);
             while (currentSize == size) {
                 lock.wait();
             }
@@ -61,11 +64,14 @@ class CustomQueue {
             // if there are 2 producer thread and 1 consumer thread
             // P2 and C1 are sleeping
             // then P1 adds an item (queue capacity = 1 ) and calls notify
-            // if suppose P2 is woken up instead of C1
+            // if suppose ONLY P2 is woken up, instead of C1 (because of notify, instead of notifyAll)
             // then P2 will get blocked on line 52
             // and there is no one to wake up C1
+            // Hence notifyAll ensures, in such cases, C1 is also woken up.
 
 
+            //todo note, this is needed since we are changing the currentSize variable
+            // which is a predicate for both enqueue/dequeue threads
             lock.notifyAll();
         }
     }
@@ -78,6 +84,7 @@ class CustomQueue {
 
            //todo note here for checking predicate
            // if is changed to while loop
+           System.out.println("Current Size :"+currentSize);
            while (currentSize == 0) {
               lock.wait();
            }
@@ -85,9 +92,45 @@ class CustomQueue {
            arr[head] = null;
            currentSize--;
            head = (head + 1) % size;
+           //todo note, this is needed since we are changing the currentSize variable
+           // which is a predicate for both enqueue/dequeue threads
            lock.notifyAll();
            return temp;
        }
+    }
+
+    public static void main(String[] args) {
+        ExecutorService executorService1 = Executors.newFixedThreadPool(4);
+        ExecutorService executorService2 = Executors.newFixedThreadPool(4);
+
+        CustomQueue blockingQueue = new CustomQueue(4);
+
+        for(int i=0;i<50;i++){
+
+            int finalI = i;
+            executorService1.submit(()->{
+                try {
+                    blockingQueue.enqueue(finalI);
+                    System.out.println("Enqueued "+finalI);
+                } catch (InterruptedException e) {
+                    System.out.println("Some Exception!! "+e);
+                    throw new RuntimeException(e);
+                }
+            });
+        }
+
+        for(int j=0;j<50;j++){
+            //todo figure out why can't we use executorService1 itself here
+            executorService2.submit(()->{
+                try {
+                   Object result = blockingQueue.dequeue();
+                    System.out.println("Dequeued "+result);
+                } catch (InterruptedException e) {
+                    System.out.println("Some Exception!! "+e);
+                    throw new RuntimeException(e);
+                }
+            });
+        }
     }
 
 }

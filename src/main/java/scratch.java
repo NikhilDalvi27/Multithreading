@@ -37,3 +37,15 @@ public class scratch {
         return id;
     }
 }
+
+ abstract class SomeClass implements Runnable{
+
+ }
+
+ class ChildClass extends SomeClass {
+
+     @Override
+     public void run() {
+
+     }
+ }

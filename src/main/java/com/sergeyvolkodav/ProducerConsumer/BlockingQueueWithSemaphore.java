@@ -1,4 +1,4 @@
-package com.sergeyvolkodav.queue;
+package com.sergeyvolkodav.ProducerConsumer;
 
 public class BlockingQueueWithSemaphore<T> {
     T[] array;
